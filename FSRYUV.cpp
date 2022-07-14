@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	int scale = 2;
 
 	//Compressed Assault Cube
-	int num = 10; //Number of how much frames to interpolate default is 300
+	int num = 1; //Number of how much frames to interpolate default is 300
 	//qcif
 
 	int outCols = inCols*scale;
@@ -116,37 +116,42 @@ int main(int argc, char *argv[])
 			int cnt = i*inCols + j;
 			int x = *inP++;
 			normal = (double)(x / 255.0);
-			SHR value((uint64_t*)&normal ,bc,party);
-			inP_array[cnt] = value;
-			*(inP_tmp + cnt)  = inP_array[cnt].check();
+			*(inP_tmp + cnt)  = normal;
+			// SHR value((uint64_t*)&normal ,bc,party);
+			// inP_array[cnt] = value;
+			// *(inP_tmp + cnt)  = inP_array[cnt].check();
 			cout << cnt << endl;
 		}
+		cout << fcnt << endl;
 		//SHR* inP_array outP_array
-		
+		std::array<SHR, 101376> outP_array;
 		
 		FSRCNN(outP_tmp, inP_tmp, inRows, inCols, scale);
-		//FSRCNN(outP_array, inP_array, inRows, inCols, scale);
+		//FSRCNN(outP_array.data(), inP_array.data(), inRows, inCols, scale);
 		//maybe use check get outP_array = outP_tmp  value
-		SHR* outP_array = (SHR *)malloc(outCols*outRows*sizeof(SHR));
+		cout << "FSRCNN Done!" << endl;
+
 		outP_tmp = outBuf_tmp;
 		
 
-		// ------------undo-------------------//		
-		//
-		//
+		
+		
 		for (i = 0; i<inRows*scale; i++)
 		for (j = 0; j<inCols*scale; j++)
 		{
 			int cnt = i*inCols*scale + j;
+			
 			*(outP_tmp + cnt) = *(outP_tmp + cnt) * 255;
+			//outP_array[cnt] = outP_array[cnt] * 255;
+			// SHR value((uint64_t*)(outP_tmp + cnt) ,bc,party);
+			// outP_array[cnt] = value;
+			// //*(outP_tmp + cnt)  = outP_array[cnt].check();
 		}
 		//server return output Y
-
+			
 		double_2_uint8( outP_tmp, outP, outCols, outRows);
-		//
-		//
-		//
-		//----------------------------//
+		//double_2_uint8( outP_array.data(), outP, outCols, outRows);
+
 
 		fwrite(outBuf, sizeof(unsigned char), outCols*outRows, outFp);
 
@@ -841,12 +846,22 @@ void PReLU(double *img_fltr,int rows, int cols, double bias, double prelu_coeff)
 		cnt = i*cols + j;
 		*(img_fltr + cnt) = Max(*(img_fltr + cnt) + bias, 0) + prelu_coeff * Min(*(img_fltr + cnt) + bias, 0);
 	}
+	//cout << "PReLU done" << endl;
 }
 
 double Max(double a, double b)
-{
+{	
+	/*SHR a_s((uint64_t*)&a,bc,party);
+	//double_t z=0.0;
+	//SHR zero((uint64_t*)&z,bc,party,(bool)1);
+    double c;
+    //SHR cond=a_s>0;
+    SHR result=(a_s>0).mux(a_s,0);
+	c=result.check();
+	*/
 	double c;
 	c = a > b ? a : b;
+	
 	return c;
 }
 
@@ -932,25 +947,39 @@ void deconv(double *img_input, double *img_output, double *kernel, int cols, int
 void double_2_uint8(double *double_img, unsigned char *uint8_img, int cols, int rows)
 {
 	int i, j, cnt, k;
-
+	// double_t z=0.0,m = 255.0;
+	// SHR zero((uint64_t*)&z,bc,party,(bool)1);
+	// SHR negative=*(double_img + cnt)<zero;
+	// SHR maximum((uint64_t*)&m,bc,party,(bool)1);
+	// SHR over=*(double_img + cnt)<zero;
+	// SHR temp;
 	for (i = 0; i < rows;i++)
 	for (j = 0; j < cols; j++)
 	{
 		cnt = i*cols + j;
-
+		
+		//*(double_img + cnt)=negative.mux(zero,*(double_img + cnt));
 		if (*(double_img + cnt) < 0)
 			* (uint8_img + cnt) = 0;
-		if (*(double_img + cnt) > 255)
+		//*(double_img + cnt)=over.mux(maximum,*(double_img + cnt));
+		else if (*(double_img + cnt) > 255)
 			* (uint8_img + cnt) = 255;
-
+		//rounding +0.5 floor
+		// *(double_img + cnt) = *(double_img + cnt) + 0.5;
+		// temp = *(double_img + cnt);
+		// temp  = temp.sfloor();
+		// k = (int)temp.check();
+		// cout << i << " "<< j << endl;
+		// *(uint8_img + cnt) =  k;
 		for (k = 0; k < 255; k++)
 		{
 			if (*(double_img + cnt) >= k && *(double_img + cnt) < (k+0.5))
 			*(uint8_img + cnt) =  k;
 
-			if (*(double_img + cnt) >= (k+0.5) && *(double_img + cnt) < (k+1))
+			else if (*(double_img + cnt) >= (k+0.5) && *(double_img + cnt) < (k+1))
 				*(uint8_img + cnt) = k + 1;
 		}
 
 	}
+	cout << "unit8" << endl;
 }
