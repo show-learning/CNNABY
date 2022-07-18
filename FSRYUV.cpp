@@ -1,5 +1,5 @@
 // This code is the C implementation of FSRCNN algorithm for YUV 4:2:0 video interpolation
-// Milad Abdollahzadeh, 09/02/2017
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +41,7 @@ void double_2_uint8(double *double_img, unsigned char *uint8_img, int cols, int 
 ABYParty* party;
 BooleanCircuit* bc;
 ArithmeticCircuit* ac;
+
 void buildparty(std::string address,std::string p,std::string r,std::string path){
     //default argument
     uint16_t port=(uint16_t)std::stoi(p);
@@ -117,13 +118,16 @@ int main(int argc, char *argv[])
 			int x = *inP++;
 			normal = (double)(x / 255.0);
 			*(inP_tmp + cnt)  = normal;
-			// SHR value((uint64_t*)&normal ,bc,party);
+			// WHY value 0?
+			SHR value((uint64_t*)&normal ,bc,party);
+			//cout << value.check();
 			// inP_array[cnt] = value;
 			// *(inP_tmp + cnt)  = inP_array[cnt].check();
 			cout << cnt << endl;
 		}
 		cout << fcnt << endl;
 		//SHR* inP_array outP_array
+		
 		std::array<SHR, 101376> outP_array;
 		
 		FSRCNN(outP_tmp, inP_tmp, inRows, inCols, scale);
@@ -135,20 +139,24 @@ int main(int argc, char *argv[])
 		
 
 		
-		
+		double d2u;
 		for (i = 0; i<inRows*scale; i++)
 		for (j = 0; j<inCols*scale; j++)
 		{
 			int cnt = i*inCols*scale + j;
 			
 			*(outP_tmp + cnt) = *(outP_tmp + cnt) * 255;
-			//outP_array[cnt] = outP_array[cnt] * 255;
-			// SHR value((uint64_t*)(outP_tmp + cnt) ,bc,party);
-			// outP_array[cnt] = value;
+			d2u = (double)*(outP_tmp + cnt);
+			//cout << d2u << endl;
+			//why SHR 0?
+			SHR value((uint64_t*)&d2u ,bc,party);
+			outP_array[cnt] = value;
+			cout << value.check() << endl;
+			// //outP_array[cnt] = outP_array[cnt] * 255;
 			// //*(outP_tmp + cnt)  = outP_array[cnt].check();
 		}
 		//server return output Y
-			
+	
 		double_2_uint8( outP_tmp, outP, outCols, outRows);
 		//double_2_uint8( outP_array.data(), outP, outCols, outRows);
 
@@ -947,30 +955,33 @@ void deconv(double *img_input, double *img_output, double *kernel, int cols, int
 void double_2_uint8(double *double_img, unsigned char *uint8_img, int cols, int rows)
 {
 	int i, j, cnt, k;
-	// double_t z=0.0,m = 255.0;
-	// SHR zero((uint64_t*)&z,bc,party,(bool)1);
-	// SHR negative=*(double_img + cnt)<zero;
-	// SHR maximum((uint64_t*)&m,bc,party,(bool)1);
-	// SHR over=*(double_img + cnt)<zero;
-	// SHR temp;
+	double_t z=0.0,m = 255.0;
+	SHR zero((uint64_t*)&z,bc,party,(bool)1);
+	
+	SHR maximum((uint64_t*)&m,bc,party,(bool)1);
+	SHR temp;
 	for (i = 0; i < rows;i++)
 	for (j = 0; j < cols; j++)
 	{
 		cnt = i*cols + j;
-		
-		//*(double_img + cnt)=negative.mux(zero,*(double_img + cnt));
-		if (*(double_img + cnt) < 0)
-			* (uint8_img + cnt) = 0;
-		//*(double_img + cnt)=over.mux(maximum,*(double_img + cnt));
-		else if (*(double_img + cnt) > 255)
-			* (uint8_img + cnt) = 255;
-		//rounding +0.5 floor
+		// *(double_img + cnt)=(*(double_img + cnt)<zero).mux(zero,*(double_img + cnt));
+		// *(double_img + cnt)=(*(double_img + cnt)>maximum).mux(maximum,*(double_img + cnt));
+		// //rounding +0.5 floor
 		// *(double_img + cnt) = *(double_img + cnt) + 0.5;
 		// temp = *(double_img + cnt);
-		// temp  = temp.sfloor();
+		//temp  = temp.sfloor();
+
+		// input is 0 not to solve
 		// k = (int)temp.check();
-		// cout << i << " "<< j << endl;
-		// *(uint8_img + cnt) =  k;
+		// cout << i << " "<< j << " "<< k  << " " << temp.check() << endl;
+
+
+		*(uint8_img + cnt) =  k;
+		if (*(double_img + cnt) < 0)
+			* (uint8_img + cnt) = 0;
+		else if (*(double_img + cnt) > 255)
+			* (uint8_img + cnt) = 255;
+		
 		for (k = 0; k < 255; k++)
 		{
 			if (*(double_img + cnt) >= k && *(double_img + cnt) < (k+0.5))
@@ -981,5 +992,5 @@ void double_2_uint8(double *double_img, unsigned char *uint8_img, int cols, int 
 		}
 
 	}
-	cout << "unit8" << endl;
+	cout << "unit8 done" << endl;
 }
