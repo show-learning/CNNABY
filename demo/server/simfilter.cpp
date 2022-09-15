@@ -275,7 +275,7 @@ int main(int argc, char **argv)
     }
     else{
 		char fname[20];
-		sprintf(fname,"L5_output_%d.txt", filter);
+		sprintf(fname,"L5_output_%d.txt\0", filter);
         fltr_5_tmp = fopen(fname, "r");
         for (int i = 0; i < rows * cols * num_filters5; i++)
 	    {
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
     }
 	
 	SHR s_bias_tmp( (uint64_t*)&zero ,bc,party);
-	int cnt_weight = 0;
+	int cnt_weight = filter*num_filters5*num_channels5;
     //double bias_tmp;
 	//cout<<"Layer5 START"<<endl;
 
