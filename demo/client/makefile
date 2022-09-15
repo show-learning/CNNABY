@@ -16,7 +16,7 @@ run:
 	./imfltr 127.0.0.1 7766 CLIENT /home/wei/ABY/bin/circ/ > L5_output_9.txt
 	./imfltr 127.0.0.1 7766 CLIENT /home/wei/ABY/bin/circ/ > L5_output_10.txt
 	./imfltr 127.0.0.1 7766 CLIENT /home/wei/ABY/bin/circ/ > L5_output_11.txt
-	./imfltr 127.0.0.1 7766 CLIENT /home/wei/ABY/bin/circ/ > L5_output_12.txt
+	./imfltr 127.0.0.1 7766 CLIENT /home/wei/ABY/bin/circ/ > L5_output.txt
 out:
 	./L62L8 127.0.0.1 7766 SERVER /home/wei/ABY/bin/circ/
 clean:

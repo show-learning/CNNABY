@@ -287,7 +287,7 @@ int main(int argc, char **argv)
     }
 	
 	SHR s_bias_tmp( (uint64_t*)&zero ,bc,party);
-	int cnt_weight = filter*num_filters5*num_channels5;
+	int cnt_weight = filter*filtersize5*num_channels5;
     //double bias_tmp;
 	//cout<<"Layer5 START"<<endl;
 
