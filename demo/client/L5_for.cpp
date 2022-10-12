@@ -203,7 +203,6 @@ int main(int argc, char **argv)
 	// Reading weights of 5th layer
 	FILE *weights_layer5_ptr;
 	weights_layer5_ptr = fopen("weights_layer5.txt", "r");
-	if (weights_layer5_ptr == NULL) { printf("Error in the reading weights of 5th layer\n"); };
 	double weights_layer5[1296];
 	SHR s_weights_layer5[1296];
 	for (int i = 0; i < 1296; i++)
@@ -223,7 +222,7 @@ int main(int argc, char **argv)
 	// Reading biases of 5th layer
 	FILE *biases_layer5_ptr;
 	biases_layer5_ptr = fopen("biasess_layer5.txt", "r");
-	if (biases_layer5_ptr == NULL) { printf("Error in the reading biases of 5th layer\n"); };
+
 	double biases_layer5[12];
 	SHR s_biases_layer5[12];
 	for (int i = 0; i < 12; i++)

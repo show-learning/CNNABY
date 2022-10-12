@@ -320,6 +320,7 @@ int main(int argc,char** argv)
 		cout<<"check: "<<s_img_fltr_4[i].check()<<endl;
 		//printf("get_d %lf\n",s_img_fltr_4[i].get_d());
 		//printf("check %lf\n",s_img_fltr_4[i].check());
+		sleep(2);
 	}
     /*for (int i = 0; i < rows * cols * num_filters4; i++)
 	{
